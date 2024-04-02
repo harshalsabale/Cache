@@ -5,8 +5,7 @@ import com.cache.exceptions.NotFoundException;
 import org.junit.jupiter.api.Test;
 
 
-import static com.cache.enums.EvictionPoliciesEnum.LRU;
-import static com.cache.enums.EvictionPoliciesEnum.RR;
+import static com.cache.enums.EvictionPoliciesEnum.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
@@ -23,6 +22,13 @@ class CacheTest {
     void cacheTest_RandomReplacementPolicyInitialization() {
         Cache<Integer, String> cache = new Cache<>(10, RR);
         assertEquals(RR, cache.getEvictionPolicy());
+        assertEquals(10, cache.getStorageCapacity());
+    }
+
+    @Test
+    void cacheTest_FirstInFirstOutPolicyInitialization() {
+        Cache<Integer, String> cache = new Cache<>(10, FIFO);
+        assertEquals(FIFO, cache.getEvictionPolicy());
         assertEquals(10, cache.getStorageCapacity());
     }
 
@@ -71,5 +77,27 @@ class CacheTest {
         cache.get("a");
         cache.put("d", 4);
         assertEquals(Integer.valueOf(4), cache.get("d"));
+    }
+
+    @Test
+    void FIFOPolicyTest() {
+        Cache<String, Integer> cache =  new Cache<>(3, FIFO);
+        cache.put("a", 1);
+        cache.put("b", 2);
+        cache.put("c", 3);
+        cache.get("b");
+        cache.get("c");
+        cache.get("c");
+        cache.get("b");
+        cache.get("a");
+        cache.put("d", 4);
+        assertThrows(NotFoundException.class, () -> cache.get("b"));
+        assertEquals(Integer.valueOf(4), cache.get("d"));
+        cache.get("a");
+        cache.get("d");
+        cache.get("d");
+        cache.put("e", 5);
+        assertThrows(NotFoundException.class, () -> cache.get("c"));
+        assertEquals(Integer.valueOf(5), cache.get("e"));
     }
 }
