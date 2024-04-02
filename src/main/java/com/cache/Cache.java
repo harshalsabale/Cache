@@ -1,7 +1,8 @@
 package com.cache;
 
+import com.cache.enums.EvictionPoliciesEnum;
 import com.cache.eviction.EvictionPolicy;
-import com.cache.eviction.policies.LeastRecentlyUsedReplacementPolicy;
+import com.cache.eviction.EvictionPolicyFactory;
 import com.cache.exceptions.StorageFullException;
 import com.cache.storage.HashMapBasedStorage;
 import com.cache.storage.Storage;
@@ -11,13 +12,19 @@ public class Cache<K,V> {
     private final Storage<K,V> storage;
     private final EvictionPolicy<K> evictionPolicy;
     private final int storageCapacity;
+    private final EvictionPoliciesEnum selectedPolicy;
 
     public Cache(final int capacity) {
-        this.storage =  new HashMapBasedStorage<>(capacity);
-        this.evictionPolicy = new LeastRecentlyUsedReplacementPolicy<>(storage);
-        this.storageCapacity = capacity;
+        this(capacity, EvictionPoliciesEnum.LRU);
     }
 
+    public Cache(final int capacity, final EvictionPoliciesEnum evictionPolicy) {
+        this.storage =  new HashMapBasedStorage<>(capacity);
+        EvictionPolicyFactory<K,V> policyFactory = new EvictionPolicyFactory<>();
+        this.evictionPolicy = policyFactory.select(evictionPolicy, storage);
+        this.selectedPolicy = evictionPolicy;
+        this.storageCapacity = capacity;
+    }
     public void put(K key, V value) {
         if(key == null || value == null) {
             throw new IllegalArgumentException("Key and/or value can't be null");
@@ -45,6 +52,10 @@ public class Cache<K,V> {
 
     public int getStorageCapacity() {
         return storageCapacity;
+    }
+
+    public EvictionPoliciesEnum getEvictionPolicy() {
+        return selectedPolicy;
     }
 
 
