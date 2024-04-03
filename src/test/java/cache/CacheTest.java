@@ -33,6 +33,13 @@ class CacheTest {
     }
 
     @Test
+    void cacheTest_LeastFrequentlyUsedPolicyInitialization() {
+        Cache<Integer, String> cache = new Cache<>(10, LFU);
+        assertEquals(LFU, cache.getEvictionPolicy());
+        assertEquals(10, cache.getStorageCapacity());
+    }
+
+    @Test
     void putMethodTest_IllegalArgumentException() {
         Cache<Integer, String> cache = new Cache<>(10);
         assertThrows(IllegalArgumentException.class, () -> cache.put(null, "a"));
@@ -86,6 +93,27 @@ class CacheTest {
         cache.put("b", 2);
         cache.put("c", 3);
         cache.get("b");
+        cache.get("c");
+        cache.get("c");
+        cache.get("b");
+        cache.get("a");
+        cache.put("d", 4);
+        assertThrows(NotFoundException.class, () -> cache.get("b"));
+        assertEquals(Integer.valueOf(4), cache.get("d"));
+        cache.get("a");
+        cache.get("d");
+        cache.get("d");
+        cache.put("e", 5);
+        assertThrows(NotFoundException.class, () -> cache.get("c"));
+        assertEquals(Integer.valueOf(5), cache.get("e"));
+    }
+
+    @Test
+    void LFUPolicyTest() {
+        Cache<String, Integer> cache =  new Cache<>(3,LFU);
+        cache.put("a", 1);
+        cache.put("b", 2);
+        cache.put("c", 3);
         cache.get("c");
         cache.get("c");
         cache.get("b");
