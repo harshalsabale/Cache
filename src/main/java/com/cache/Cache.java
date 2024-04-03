@@ -25,6 +25,7 @@ public class Cache<K,V> {
         this.selectedPolicy = evictionPolicy;
         this.storageCapacity = capacity;
     }
+
     public void put(K key, V value) {
         if(key == null || value == null) {
             throw new IllegalArgumentException("Key and/or value can't be null");
